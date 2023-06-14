@@ -69,15 +69,16 @@ double* copy_vector(double* original, int size) {
     return copy;
 }
 
-void create_matrix(double*** A, double** x, int rows, int cols){
+void create_matrix(double*** A, double** x, double** b, int rows, int cols){
     *A = (double**)malloc(sizeof(double*) * rows);
     for (int i = 0; i < rows; i++) {
         (*A)[i] = (double*)malloc(sizeof(double) * cols);
     }
     *x = malloc(sizeof(double) * rows);
+    *b = malloc(sizeof(double) * rows);
 }
 
-int read_vector_values(FILE* file, char* filename, double** A, int size) {
+int read_vector_values(FILE* file, char* filename, double* b) {
     if (file == NULL) {
         printf("Failed to open file: %s\n", filename);
         return -1;
@@ -91,7 +92,7 @@ int read_vector_values(FILE* file, char* filename, double** A, int size) {
     }
 
     for (int i = 0; i < rows; i++) {
-        if (fscanf(file, "%lf", &A[i][size]) != 1) {
+        if (fscanf(file, "%lf", &b[i]) != 1) {
             printf("Failed to read vector element at index %d.\n", i);
             fclose(file);
             return -1;
@@ -103,7 +104,7 @@ int read_vector_values(FILE* file, char* filename, double** A, int size) {
 }
 
 
-int read_matrix_sizes(FILE* file, char* filename, int *rows, int *cols, int *elems, int *size) {
+int read_matrix_sizes(FILE* file, char* filename, int* rows, int* cols, int* elems, int size) {
     if (file == NULL) {
         printf("Error opening file: %s\n", filename);
         return -1;
@@ -115,12 +116,12 @@ int read_matrix_sizes(FILE* file, char* filename, int *rows, int *cols, int *ele
         return -1;
     }
 
-    int row_count = *rows + 1;
-    if (row_count % *size != 0) {
-        *elems = row_count / *size + 1;
-        *cols = *size * *elems;
+    int row_count = *rows;
+    if (row_count % size != 0) {
+        *elems = row_count / size + 1;
+        *cols = size * *elems;
     } else {
-        *elems = row_count / *size;
+        *elems = row_count / size;
         *cols = row_count;
     }
 
@@ -140,4 +141,13 @@ int read_matrix_values(FILE* file, char* filename, double** A, int rows) {
     }
     fclose(file);
     return 1;
+}
+
+void prepare(double** A, double** A_values, int rows, double* b, double* b_values) {
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < rows; j++) {
+            A[i][j] = A_values[i][j];
+        }
+        b[i] = b_values[i];
+    }
 }
